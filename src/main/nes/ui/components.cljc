@@ -43,9 +43,12 @@
                      :position {:lat 49.9086951
                                 :lng 20.197881}}))))
 
-(def ui-my-map (let [HOC (GoogleApiWrapper #js {:apiKey "AIzaSyDAiFHA9fwVjW83jUFjgL43D_KP9EFcIfE"})
-                     WrappedMyMap (HOC MyMap)]
-                 (utils/factory-apply WrappedMyMap)))
+(defn ui-my-map [parent-context props]
+  (let [HOC (GoogleApiWrapper #js {:apiKey "AIzaSyDAiFHA9fwVjW83jUFjgL43D_KP9EFcIfE"}) ;; HOC is a fn: ComponentClass -> WrappedComponentClass
+        WrappedMyMap (HOC MyMap)                            ;; WrappedMyMap is a component class that wraps MyMap inside with some added logic for Google API initialization
+        wrapped-map-factory (utils/factory-apply WrappedMyMap)]
+    (prim/with-parent-context parent-context
+      (wrapped-map-factory props))))
 
 (defsc Stop [this {:keys [stop/id stop/name stop/description stop/location]}]
   {:ident [:stop/by-id :stop/id]
@@ -56,14 +59,15 @@
                    :stop/location :param/location}}
   (sui/ui-card
     (sui/ui-card-content
-      (sui/ui-popup {:trigger (sui/ui-button {:floated "right"
+      (ui-my-map this location)
+      #_(sui/ui-popup {:trigger (sui/ui-button {:floated "right"
                                               :icon true
                                               :basic true
                                               :circular true}
-                                (sui/ui-icon {:name "map outline"}))
+                                             (sui/ui-icon {:name "map outline"}))
                      :hoverable true
                      :position "bottom left"}
-        (ui-my-map location))
+                    (ui-my-map this location))
       (sui/ui-card-header
         name)
       (sui/ui-card-description
