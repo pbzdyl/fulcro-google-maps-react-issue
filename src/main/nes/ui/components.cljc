@@ -27,10 +27,10 @@
                     :as props}]
   {:query [:lat :lon]}
   #?(:cljs
-     (js/console.log "Latlng" this props lat lon))
+     (js/console.log "This:" this "Props:" props "Lat" lat "Lon" lon))
   (dom/div {:style {:width "250px" :height "250px"}}
     (gmaps/google-map {:zoom 14
-                       :google (.. this -props -google)
+                       :google (.-google props)
                        :initialCenter {:lat 37.778519
                                        :lng -122.405640}
                        :center {:lat 37.778519
@@ -43,12 +43,16 @@
                      :position {:lat 49.9086951
                                 :lng 20.197881}}))))
 
-(defn ui-my-map [parent-context props]
+(def ui-my-map (prim/factory MyMap))
+
+(defn ui-my-map-glue
+  [js-props]
+  (ui-my-map (js->clj js-props)))
+
+(def ui-my-map-wrapped
   (let [HOC (GoogleApiWrapper #js {:apiKey "AIzaSyDAiFHA9fwVjW83jUFjgL43D_KP9EFcIfE"}) ;; HOC is a fn: ComponentClass -> WrappedComponentClass
-        WrappedMyMap (HOC MyMap)                            ;; WrappedMyMap is a component class that wraps MyMap inside with some added logic for Google API initialization
-        wrapped-map-factory (utils/factory-apply WrappedMyMap)]
-    (prim/with-parent-context parent-context
-      (wrapped-map-factory props))))
+        WrappedMyMap (HOC ui-my-map-glue)]                           ;; WrappedMyMap is a component class that wraps MyMap inside with some added logic for Google API initialization
+    (utils/factory-apply WrappedMyMap)))
 
 (defsc Stop [this {:keys [stop/id stop/name stop/description stop/location]}]
   {:ident [:stop/by-id :stop/id]
@@ -59,7 +63,7 @@
                    :stop/location :param/location}}
   (sui/ui-card
     (sui/ui-card-content
-      (ui-my-map this location)
+      (ui-my-map-wrapped location)
       #_(sui/ui-popup {:trigger (sui/ui-button {:floated "right"
                                               :icon true
                                               :basic true

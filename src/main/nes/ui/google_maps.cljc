@@ -8,12 +8,6 @@
        goog.object)))
 
 #?(:cljs
-   (js/console.log "GAW" (GoogleApiWrapper #js {:apiKey "AIzaSyCgYhu25gFBLguTTF0kWBd9Qt6BrcDUxnM"})))
-
-#?(:cljs
-   (js/console.log "Map" Map))
-
-#?(:cljs
    (def google-api-wrapper GoogleApiWrapper))
 
 #?(:clj
